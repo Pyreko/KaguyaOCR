@@ -244,9 +244,13 @@ namespace MangaReader
             }
 
             // Write to chapter JSON
-            File.WriteAllText(outputFile, JsonConvert.SerializeObject(chapterJSON, Formatting.Indented));
-
-            generateMasterJSON(masterFile, masterDictionary);
+            try {
+                File.WriteAllText(outputFile, JsonConvert.SerializeObject(chapterJSON, Formatting.Indented));
+                generateMasterJSON(masterFile, masterDictionary);
+            }
+            catch (Exception ex) {
+                logger.Error(string.Format("Error while writing files: " + ex));
+            }
 
             stopwatch.Stop();
             logger.Debug(string.Format("Total time for generating json for chapter: {0} seconds.", stopwatch.ElapsedMilliseconds / 1000));

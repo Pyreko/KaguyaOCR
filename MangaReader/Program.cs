@@ -15,7 +15,7 @@ namespace MangaReader
         [Option('i', "input-path", Default = "", HelpText = "The path containing the chapters you wish to OCR or a JSON file representing a OCR'd chapter.  If the former, ensure that all pages are in order and are JPGs or PNGs.")]
         public string InputPath { get; set; }
 
-        [Option('l', "logging", Default = false, HelpText = "Whether or not to enable logging.  Stored at the program's directory.  Defaults to false.")]
+        [Option('l', "logging", Default = false, HelpText = "Whether or not to enable logging.  Stored at the program's directory.")]
         public bool Logging { get; set; }
 
         [Option('m', "master-dictionary-filepath", Default = "", HelpText = "The filepath where you want the master dictionary file to be appended to.  If left blank or if the file does not exist, a new one is generated from scratch at the same directory as the input file")]
@@ -24,8 +24,11 @@ namespace MangaReader
         [Option('o', "output-json-filepath", Default = "", HelpText = "The filepath where you wish your output JSON file to be placed if you try to OCR.  If not specified, this is just the same directory as the input file.")]
         public string OutputFilePath { get; set; }
 
-        [Option('v', "verbose", Default = false, HelpText = "Whether or not to output to console.  Defaults to false.")]
+        [Option('v', "verbose", Default = false, HelpText = "Whether or not to output to console.")]
         public bool Verbose { get; set; }
+
+        [Option('t', "time", Default = 10, HelpText = "How long to wait in between endpoint calls in seconds.")]
+        public int Time { get; set; }
     }
 
     internal class Program
@@ -43,6 +46,7 @@ namespace MangaReader
             string masterFile = "";
             double chapterNum = -1;
             string bulkJSONPath = "";
+            int endpointTime = 10;
 
 
             Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
@@ -65,6 +69,7 @@ namespace MangaReader
                 masterFile = o.MasterDictionaryFilePath;
                 chapterNum = o.ChapterNumber;
                 bulkJSONPath = o.BulkJSONPath;
+                endpointTime = o.Time;
 
                 // First read JSON, error out if non-existant
                 if (!File.Exists("config.json")) {
@@ -124,7 +129,7 @@ namespace MangaReader
                     }
                     else
                     {
-                        OCRScanner ocrScanner = new OCRScanner(logger, subscriptionKey, endpoint);
+                        OCRScanner ocrScanner = new OCRScanner(logger, subscriptionKey, endpoint, endpointTime);
                         var tokens = ocrScanner.GenerateOCR(inputPath, chapterNum);
                         jsonGen.FormatJSON(tokens, outputFile, masterFile, chapterNum);
                     }

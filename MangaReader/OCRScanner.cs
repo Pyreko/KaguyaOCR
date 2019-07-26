@@ -15,12 +15,14 @@ namespace MangaReader
         private readonly string endpoint;
         private readonly NLog.Logger logger;
         private readonly string subscriptionKey;
+        private readonly int endpointTime;
 
-        public OCRScanner(NLog.Logger logger, string subscriptionKey, string endpoint)
+        public OCRScanner(NLog.Logger logger, string subscriptionKey, string endpoint, int endpointTime)
         {
             this.logger = logger;
             this.subscriptionKey = subscriptionKey;
             this.endpoint = endpoint + "/vision/v2.0/read/core/asyncBatchAnalyze";
+            this.endpointTime = endpointTime;
         }
 
         public List<JToken> GenerateOCR(string inputDir, double chapterNum)
@@ -90,7 +92,7 @@ namespace MangaReader
 
                                 while (true)
                                 {
-                                    Thread.Sleep(3000);
+                                    Thread.Sleep(endpointTime * 1000);
                                     HttpClient readJSONClient = new HttpClient();
                                     readJSONClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
                                     HttpResponseMessage jsonResponse = await readJSONClient.GetAsync(resultURI);
