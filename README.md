@@ -36,7 +36,7 @@ To add **multiple** chapter JSON files in a directory to a master dictionary:
 dotnet MangaReader.dll -b "chapter/json/directory/path" -m "optional/output/master/dictionary/path"
 ```
 
-To add verbosity or logging (logs to ``diagnostics.log`` in the program directory), use ``-v`` or ``--l`` tags respectively.
+To add verbosity or logging (logs to ``diagnostics.log`` in the program directory), use ``-v`` or ``-l`` tags respectively.
 
 ## JSON
 
