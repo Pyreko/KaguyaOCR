@@ -1,10 +1,18 @@
 # KaguyaOCR
 
 A tool for reading in ~~Kaguya~~manga pages and generating a resulting OCR JSON file
-for a chapter, in addition to a master dictionary, using MS's Reader tool from their Cognitive Services.
+for a chapter, in addition to a master dictionary, [using MS's Reader tool from their Cognitive Services](https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/).
 
-## To use
-To build from source, clone and open the solution, then publish.  To just use, download from Releases.
+Note this is probably not the cleanest code or anything, and was kinda cobbled together to just work.  Improvements to usability and less jankiness will come in the future (I swear).
+
+### What it does
+
+The main use case is to generate a JSON file containing all words found and their locations for a chapter (I'll refer to this as the "chapter" JSON) and a dictionary containing all words for that series and their respective locations, chapter and page wise (henceforth refered to as the "master" dictionary).
+
+When fed a directory containing image files for a chapter, it'll output a chapter JSON (ie: chapter 1 gives ``1.json``) and a master dictionary JSON (defaults to ``master_dictionary.json`` in the same directory).  See below for an example of the JSON format.
+
+### To use
+To build from source, clone and open the solution, then publish.  To just use, download from Releases.  Note that the most up-to-date version will always be from the repo, so cloning from that is probably preferable.
 
 In both cases, you'll need to include a config.json file with the following structure in the same directory as the built program:
 ```json
@@ -38,7 +46,7 @@ dotnet MangaReader.dll -b "chapter/json/directory/path" -m "optional/output/mast
 
 To add verbosity or logging (logs to ``diagnostics.log`` in the program directory), use ``-v`` or ``-l`` tags respectively.
 
-## JSON
+### JSON format
 
 Two JSON files are generated at the end (at most).  A chapter JSON file and a master dictionary JSON.
 
@@ -131,3 +139,7 @@ The master dictionary has a slightly similar format to the ``MentionedWordChapte
 }
 ```
 where each word maps to a (chapter, page array) dictionary.
+
+### Contributions
+
+Well, this was originally a private repo, but if anyone wants to contribute, feel free to.
