@@ -1,9 +1,11 @@
 # KaguyaOCR
 
 A tool for reading in ~~Kaguya~~manga pages and generating a resulting OCR JSON file
-for a chapter, in addition to a master dictionary, [using MS's Reader tool from their Cognitive Services](https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/).
+for a chapter, in addition to a master dictionary, [using MS's Reader tool from their Cognitive Services](https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/).  In particular, it uses the Read API, not the OCR or Recognize Text API (see [here](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/concept-recognizing-text) for the differences).
 
-Note this is probably not the cleanest code or anything, and was kinda cobbled together to just work.  Improvements to usability and less jankiness will come in the future (I swear).
+Note this is probably not the cleanest code or anything, and was kinda cobbled together to just work.  Improvements to usability and less jankiness will come in the future (I swear).  Furthermore, quality of the OCR is entirely dependant on MS's OCR.  This just formats the results into useful forms.
+
+Despite the name and the fact that it was written for https://guya.moe/, this will work fine for any image/manga/comic.
 
 ### What it does
 
@@ -22,7 +24,7 @@ In both cases, you'll need to include a config.json file with the following stru
 }
 ```
 
-To run the program, you will need .NET Core, as well as an internet connection.
+To run the program, you will need .NET Core, as well as an internet connection (or if you're running Cognitive off a Docker container, I suppose not).
 
 Then, open a prompt in the release directory.  To see a list of flags:
 ```bash
@@ -33,6 +35,8 @@ To OCR a folder (representing a chapter), run the following:
 ```bash
 dotnet MangaReader.dll -i "your/input/directory/folder" -c chapter_number -o "optional/output/json/file/path.json" -m "optional/output/master/dictionary/path.json"
 ```
+
+Note that your files in the directory **must** be in order, namewise!  That is, page 1 should be the first file, page 2 should be the second file, etc.  To be safe, just pad your filenames with 0's if needed (01, 02, 03... 15, for example).
 
 To just add a chapter JSON file to a master dictionary (or to just create a master dictionary from a chapter JSON file):
 ```bash

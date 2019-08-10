@@ -13,10 +13,9 @@ namespace MangaReader
     internal class OCRScanner
     {
         private readonly string endpoint;
+        private readonly int endpointTime;
         private readonly NLog.Logger logger;
         private readonly string subscriptionKey;
-        private readonly int endpointTime;
-
         public OCRScanner(NLog.Logger logger, string subscriptionKey, string endpoint, int endpointTime)
         {
             this.logger = logger;
@@ -71,6 +70,7 @@ namespace MangaReader
                     BinaryReader binaryReader = new BinaryReader(fileStream);
                     byte[] byteArray = binaryReader.ReadBytes((int)fileStream.Length);
                     fileStream.Close();
+                    binaryReader.Close();
 
                     int count = 0;
                     while (true)
@@ -83,8 +83,10 @@ namespace MangaReader
                         HttpResponseMessage response = await httpClient.PostAsync(uri, byteContent);
                         logger.Info(string.Format("POST response code: {0}", response.StatusCode));
                         httpClient.Dispose();
+
                         if (response.IsSuccessStatusCode)
                         {
+                            response.Dispose();
                             HttpResponseHeaders results = response.Headers;
                             if (response.Headers.TryGetValues("Operation-Location", out IEnumerable<string> values))
                             {
@@ -92,28 +94,30 @@ namespace MangaReader
 
                                 while (true)
                                 {
-                                    Thread.Sleep(endpointTime * 1000);
+                                    Thread.Sleep(endpointTime * 1000 / 2);
                                     HttpClient readJSONClient = new HttpClient();
                                     readJSONClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
                                     HttpResponseMessage jsonResponse = await readJSONClient.GetAsync(resultURI);
-                                    Thread.Sleep(1000);
+                                    Thread.Sleep(endpointTime * 1000 / 2);
                                     if (jsonResponse.IsSuccessStatusCode || jsonResponse.StatusCode.Equals("Accepted"))
                                     {
                                         string resultingJSONString = await jsonResponse.Content.ReadAsStringAsync();
                                         JObject resultJSON = JObject.Parse(resultingJSONString);
 
                                         resultJSON.TryGetValue("status", out JToken resultStatus);
-                                        logger.Info(string.Format("Current conversion status: {0}", resultStatus));
+                                        logger.Info(string.Format("Current scanning status: {0}", resultStatus));
+                                        jsonResponse.Dispose();
+
                                         if (resultStatus != null && resultStatus.ToString() != "Running")
                                         {
                                             resultJSON.TryGetValue("recognitionResults", out JToken recognitionResults);
-
                                             readJSONClient.Dispose();
                                             return recognitionResults;
                                         }
                                     }
                                     else
                                     {
+                                        jsonResponse.Dispose();
                                         logger.Debug(string.Format("Recieved a non-successful status code while GETing: {0}", response.StatusCode));
                                     }
                                     readJSONClient.Dispose();
@@ -122,6 +126,7 @@ namespace MangaReader
                         }
                         else
                         {
+                            response.Dispose();
                             logger.Debug(string.Format("Recieved a non-successful status code while POSTing: {0}", response.StatusCode));
                             ++count;
                             if (count >= 5)

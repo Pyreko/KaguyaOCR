@@ -27,8 +27,11 @@ namespace MangaReader
         [Option('v', "verbose", Default = false, HelpText = "Whether or not to output to console.")]
         public bool Verbose { get; set; }
 
-        [Option('t', "time", Default = 10, HelpText = "How long to wait in between endpoint calls in seconds.")]
+        [Option('t', "time", Default = 10, HelpText = "How long to wait in between endpoint calls in seconds.  Defaults to 10 seconds.")]
         public int Time { get; set; }
+
+        [Option('r', "regenerate", Default = false, HelpText = "Whether to regenerate existing chapter files.")]
+        public bool Regenerate { get; set; }
     }
 
     internal class Program
@@ -47,7 +50,7 @@ namespace MangaReader
             double chapterNum = -1;
             string bulkJSONPath = "";
             int endpointTime = 10;
-
+            bool toRegenerate = false;
 
             Parser.Default.ParseArguments<Options>(args).WithParsed<Options>(o =>
             {
@@ -70,9 +73,11 @@ namespace MangaReader
                 chapterNum = o.ChapterNumber;
                 bulkJSONPath = o.BulkJSONPath;
                 endpointTime = o.Time;
+                toRegenerate = o.Regenerate;
 
                 // First read JSON, error out if non-existant
-                if (!File.Exists("config.json")) {
+                if (!File.Exists("config.json"))
+                {
                     logger.Error("Missing config.json file!");
                     return;
                 }
@@ -84,7 +89,8 @@ namespace MangaReader
                     endpoint = configJSON.SelectToken("personalEndpoint").ToString();
                     logger.Info(string.Format("SubKey: {0}, Endpoint: {1}", subscriptionKey, endpoint));
                 }
-                catch (System.Exception ex) {
+                catch (System.Exception ex)
+                {
                     logger.Error(string.Format("Error while reading config.json file: " + ex));
                     return;
                 }
@@ -102,7 +108,15 @@ namespace MangaReader
 
                 if (masterFile.Equals(""))
                 {
-                    masterFile = Path.GetDirectoryName(inputPath) + "/" + "gantinomicon" + ".json";
+                    if (!inputPath.Equals(""))
+                    {
+                        masterFile = Path.GetDirectoryName(inputPath) + "/" + "master_dictionary" + ".json";
+                    }
+                    else
+                    {
+                        masterFile = new DirectoryInfo(Path.GetDirectoryName(bulkJSONPath)).FullName + "/" + "master_dictionary" + ".json";
+
+                    }
                 }
 
                 JSONGenerator jsonGen = new JSONGenerator(logger);
@@ -119,7 +133,14 @@ namespace MangaReader
                 }
                 else if (!bulkJSONPath.Equals(""))
                 {
-                    jsonGen.BulkAddJSONToDictionary(bulkJSONPath, masterFile);
+                    if (toRegenerate)
+                    {
+                        jsonGen.RegenerateExistingJSON(bulkJSONPath, masterFile);
+                    }
+                    else
+                    {
+                        jsonGen.BulkAddJSONToDictionary(bulkJSONPath, masterFile);
+                    }
                 }
                 else if (!inputPath.EndsWith(".json"))
                 {

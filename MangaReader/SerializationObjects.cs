@@ -13,6 +13,27 @@ namespace MangaReader
     {
         public int X { get; set; }
         public int Y { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as Coords;
+            return (other.X == X && other.Y == Y);
+        }
+
+        public static bool operator ==(Coords a, Coords b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Coords a, Coords b)
+        {
+            return !(a == b);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     internal class FormattedJSONPage
@@ -29,7 +50,7 @@ namespace MangaReader
         public string Text { get; set; }
     }
 
-    internal class Lines
+    internal class Line
     {
         public List<int> BoundingBox { get; set; }
         public string Text { get; set; }
@@ -44,7 +65,7 @@ namespace MangaReader
     internal class ResponseJSON
     {
         public int Height { get; set; }
-        public List<Lines> Lines { get; set; }
+        public List<Line> Lines { get; set; }
         public int Width { get; set; }
     }
 
