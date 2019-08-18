@@ -14,9 +14,15 @@ The main use case is to generate a JSON file containing all words found and thei
 When fed a directory containing image files for a chapter, it'll output a chapter JSON (ie: chapter 1 gives ``1.json``) and a master dictionary JSON (defaults to ``master_dictionary.json`` in the same directory).  See below for an example of the JSON format.
 
 ### To use
-To build from source, clone and open the solution, then publish.  To just use, download from Releases.  Note that the most up-to-date version will always be from the repo, so cloning from that is probably preferable.
+To build from source, clone and open the solution, then Publish.  If you're using VS Studio, it should be fairly straightforward.  If not, you can publish from command line using dotnet:
 
-In both cases, you'll need to include a config.json file with the following structure in the same directory as the built program:
+```bash
+dotnet publish MangaReader.sln
+```
+
+To just use the latest release, download from Releases.  Note that the most up-to-date version will always be from the repo, so cloning from that is probably preferable.
+
+In both cases, you'll need to include a config.json file with the following structure in the same directory as the built program (where ``MangaReader.dll`` is located):
 ```json
 {
     "subscriptionKey": "your-microsoft-cognitive-key",
