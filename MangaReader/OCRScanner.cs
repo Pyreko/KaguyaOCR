@@ -29,7 +29,7 @@ namespace MangaReader
             List<JToken> listOfJTokens = new List<JToken>();
             string[] supportedExtensions = { ".png", ".jpg" };
             List<string> imagePaths = new List<string>(Directory.EnumerateFiles(inputDir, "*.*", SearchOption.TopDirectoryOnly)
-                                                        .Where(s => supportedExtensions.Any(ext => ext == Path.GetExtension(s))));
+                                                        .Where(s => supportedExtensions.Any(ext => ext == Path.GetExtension(s)))).OrderBy(q => q).ToList();
 
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
@@ -42,6 +42,7 @@ namespace MangaReader
                 System.Diagnostics.Stopwatch pageStopWatch = new System.Diagnostics.Stopwatch();
                 pageStopWatch.Start();
                 logger.Info(string.Format("Scanning page {0} of {1}", pageNum, totalPages));
+                logger.Info(string.Format("Page path: {0}", imagePath));
 
                 var currentPageToken = CallReadAPI(imagePath).Result;
                 if (currentPageToken != null)
