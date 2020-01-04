@@ -1,6 +1,8 @@
 ﻿using CommandLine;
 using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
+using System.Linq;
 
 namespace MangaReader
 {
@@ -32,6 +34,9 @@ namespace MangaReader
 
         [Option('r', "regenerate", Default = false, HelpText = "Whether to regenerate existing chapter files.")]
         public bool Regenerate { get; set; }
+
+        [Option('u', "bulk-convert", Default = false, HelpText = "The directory in which the program will convert the first and deepest folder's contents for each immediate folder in this path.  Note this mode is tailored for guya.moe files, and thus, requires specific naming conventions for the auto-chapter numbering.  For example, it expects that the immediate folder contains a chapter number format regex of the form '[0-9]+(?:-[0-9]*)?_.*'")]
+        public string BulkConvertPath { get; set; }
     }
 
     internal class Program
@@ -47,6 +52,7 @@ namespace MangaReader
             string inputPath = "";
             string outputFile = "";
             string masterFile = "";
+            string bulkFolderDirectory = "";
             double chapterNum = -1;
             string bulkJSONPath = "";
             int endpointTime = 10;
@@ -74,6 +80,7 @@ namespace MangaReader
                 bulkJSONPath = o.BulkJSONPath;
                 endpointTime = o.Time;
                 toRegenerate = o.Regenerate;
+                bulkFolderDirectory = o.BulkConvertPath;
 
                 // First read JSON, error out if non-existant
                 if (!File.Exists("config.json"))
@@ -95,7 +102,7 @@ namespace MangaReader
                     return;
                 }
 
-                if (inputPath.Equals("") && bulkJSONPath.Equals(""))
+                if (inputPath.Equals("") && bulkJSONPath.Equals("") && bulkFolderDirectory.Equals(""))
                 {
                     logger.Error("Please include at least one valid form of input!");
                     return;
@@ -112,10 +119,13 @@ namespace MangaReader
                     {
                         masterFile = Path.GetDirectoryName(inputPath) + "/" + "master_dictionary" + ".json";
                     }
-                    else
+                    else if (!bulkJSONPath.Equals(""))
                     {
                         masterFile = new DirectoryInfo(Path.GetDirectoryName(bulkJSONPath)).FullName + "/" + "master_dictionary" + ".json";
-
+                    }
+                    else
+                    {
+                        masterFile = new DirectoryInfo(Path.GetDirectoryName(bulkFolderDirectory)).FullName + "/" + "master_dictionary" + ".json";
                     }
                 }
 
@@ -123,6 +133,48 @@ namespace MangaReader
 
                 // TODO: Add a capability to remove a chapter's OCR from the master.
                 // Decide what to run
+
+                if (!bulkFolderDirectory.Equals(""))
+                {
+                    if (Directory.Exists(bulkFolderDirectory))
+                    {
+                        logger.Debug("Master folder for bulk: {0}", masterFile);
+                        // Just use this and bail...
+                        foreach (var folder in Directory.EnumerateDirectories(bulkFolderDirectory))
+                        {
+                            // For each folder:
+
+                            var splitNum = new DirectoryInfo(folder).Name.Split('_')[0].Replace("-", ".");
+                            logger.Debug("SplitNum: {0}", splitNum);
+                            var autoChapterNum = Convert.ToDouble(splitNum);
+                            logger.Debug("Found chapter: {0}", autoChapterNum);
+
+                            // Move to the last directory possible
+                            var autoInputPath = folder;
+                            var enumedDirs = Directory.EnumerateDirectories(autoInputPath);
+                            while (enumedDirs != null && enumedDirs.Any())
+                            {
+                                autoInputPath = enumedDirs.First();
+                                enumedDirs = Directory.EnumerateDirectories(autoInputPath);
+                            }
+                            logger.Debug("Converting folder: {0}", autoInputPath);
+
+                            outputFile = new DirectoryInfo(Path.GetDirectoryName(bulkFolderDirectory)).FullName + "/" + splitNum + "-dict.json";
+                            logger.Debug("Saving output to: {0}", outputFile);
+
+                            // Convert!
+                            OCRScanner ocrScanner = new OCRScanner(logger, subscriptionKey, endpoint, endpointTime);
+                            var tokens = ocrScanner.GenerateOCR(autoInputPath, autoChapterNum);
+                            jsonGen.FormatJSON(tokens, outputFile, masterFile, autoChapterNum);
+                        }
+                    }
+                    else
+                    {
+                        logger.Error("Invalid bulk folder directory!");
+                    }
+                    return;
+                }
+
                 if (!inputPath.Equals("") && (!File.Exists(inputPath) && !Directory.Exists(inputPath)))
                 {
                     logger.Error("Input file path is invalid!");
