@@ -35,7 +35,7 @@ namespace MangaReader
         [Option('r', "regenerate", Default = false, HelpText = "Whether to regenerate existing chapter files.")]
         public bool Regenerate { get; set; }
 
-        [Option('u', "bulk-convert", Default = false, HelpText = "The directory in which the program will convert the first and deepest folder's contents for each immediate folder in this path.  Note this mode is tailored for guya.moe files, and thus, requires specific naming conventions for the auto-chapter numbering.  For example, it expects that the immediate folder contains a chapter number format regex of the form '[0-9]+(?:-[0-9]*)?_.*'")]
+        [Option('u', "bulk-convert", Default = "", HelpText = "The directory in which the program will convert the first and deepest folder's contents for each immediate folder in this path.  Note this mode is tailored for guya.moe files, and thus, requires specific naming conventions for the auto-chapter numbering.  For example, it expects that the immediate folder contains a chapter number format regex of the form '[0-9]+(?:-[0-9]*)?_.*'")]
         public string BulkConvertPath { get; set; }
     }
 
