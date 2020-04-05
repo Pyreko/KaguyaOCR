@@ -1,5 +1,7 @@
 # KaguyaOCR
 
+**Note that I am likely deprecating this tool for a rewritten one that is a bit less cobbled together and easier to use.**
+
 A tool for reading in ~~Kaguya~~manga pages and generating a resulting OCR JSON file
 for a chapter, in addition to a master dictionary, [using MS's Reader tool from their Cognitive Services](https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/).  In particular, it uses the Read API, not the OCR or Recognize Text API (see [here](https://docs.microsoft.com/en-us/azure/cognitive-services/computer-vision/concept-recognizing-text) for the differences).
 
